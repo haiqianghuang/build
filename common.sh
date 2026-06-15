@@ -145,6 +145,21 @@ package_xml_path() {
 get_pkg_key_by_package_name() {
   local name="$1"
   [[ -n "${name}" ]] || return 0
+
+  local config_file="${BUILD_CONFIG_FILE:-}"
+  if [[ -n "${config_file}" && -f "${config_file}" ]] && has_jq; then
+    local enabled_pkg enabled_xml enabled_name
+    for enabled_pkg in $(get_enabled_packages_any ""); do
+      [[ -n "${enabled_pkg}" ]] || continue
+      enabled_xml="$(package_xml_path "${enabled_pkg}")"
+      [[ -f "${enabled_xml}" ]] || continue
+      enabled_name="$(sed -n 's/.*<name> *\([^<]*\) *<\/name>.*/\1/p' "${enabled_xml}" 2>/dev/null | head -n 1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+      if [[ "${enabled_name}" == "${name}" ]]; then
+        echo "${enabled_pkg}"
+        return 0
+      fi
+    done
+  fi
   local f
   while IFS= read -r f; do
     [[ -f "${f}" ]] || continue

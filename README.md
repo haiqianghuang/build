@@ -200,6 +200,42 @@ SROBOTIS_DOCKER_MAX_JOBS=0 ./build/build.sh all
 <system_depend check="pkg-config --exists yaml-cpp">libyaml-cpp-dev</system_depend>
 ```
 
+业务包 `package.xml` 应尽量只声明通用系统依赖。仅交叉编译需要区分 Ubuntu host 与
+Bianbu sysroot 的依赖，统一在 `build/cross_deps.json` 中按包路径维护；该文件会按依赖名覆盖
+对应 `package.xml` 的 `arch`、`cross_scope` 或 `check`，也可以新增只在 cross 构建时需要的依赖：
+
+```json
+{
+  "packages": {
+    "application/native/reachy_mini": {
+      "system_dependencies": {
+        "required": [
+          {"name": "protobuf-compiler", "cross_scope": "host", "check": "which protoc"}
+        ]
+      }
+    }
+  }
+}
+```
+
+`cross_scope="host"` 表示安装到 Ubuntu 构建容器，`cross_scope="sysroot"` 表示安装到 Bianbu
+sysroot 容器，`cross_scope="skip"` 表示 cross 构建跳过。`package.xml` 中已有的 `cross_scope`
+仍兼容，但新增业务包优先使用 `build/cross_deps.json`，避免交叉编译策略分散在各个包目录。
+`build/package_ros2.xml` 本身位于 `build/` 下，仍可直接声明 ROS2 全局 cross 依赖。
+
+Cross 编译如果需要在目标架构容器中提前生成产物，可在包目录中放置
+`cross_prebuild_target.sh`、`scripts/cross_prebuild_target.sh` 或
+`build/cross_prebuild_target.sh`。`cross_build.sh` 会在同步 sysroot 后、进入 Ubuntu
+交叉编译前执行这些 hook。若需要在 Ubuntu host 容器中准备交叉工具链、代码生成器或
+其他主机侧工具，可放置对应的 `cross_prebuild_host.sh`，脚本会收到 `SROBOTIS_CROSS_HOST_PREFIX`
+并被安装到 `output/cross/<target>/host`。hook 会收到 `REPO_ROOT`、`BUILD_CONFIG_FILE`、
+`SROBOTIS_PACKAGE_KEY`、`SROBOTIS_CROSS_OUTPUT_ROOT`、`SROBOTIS_CROSS_SYSROOT`、
+`SROBOTIS_CROSS_TOOLCHAIN_FILE`、`SROBOTIS_CROSS_STAGING`、`SROBOTIS_CROSS_CACHE_ROOT` 等环境变量，适合处理
+确实无法在 Ubuntu host 侧交叉编译、必须在目标架构容器中产出文件的步骤。
+Rust/Cargo 包优先在 Ubuntu host 侧完成交叉编译；`cross_build.sh` 会从导出的 sysroot
+中检测可用 rustlib target，并通过 `SROBOTIS_CARGO_TARGET`、`SROBOTIS_CARGO_TARGET_LINKER`、
+`SROBOTIS_RUST_SYSROOT` 和 `SROBOTIS_CARGO_LINK_SYSROOT` 传给 CMake/Cargo。
+
 依赖检查失败时，构建系统会汇总缺失的 required 依赖，并提示安装；设置
 `AUTO_INSTALL_DEPS=yes` 或 `AUTO_INSTALL_DEPS=true` 时会直接执行依赖安装。以 root 运行时使用
 `apt install -y ...`，非 root 运行且存在 sudo 时使用 `sudo apt install -y ...`。

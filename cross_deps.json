@@ -1,0 +1,105 @@
+{
+  "version": "1.0",
+  "packages": {
+    "application/native/ai-cubpet": {
+      "system_dependencies": {
+        "required": [
+          {
+            "name": "meson",
+            "arch": "x86_64",
+            "cross_scope": "host",
+            "check": "meson --version"
+          },
+          {
+            "name": "ninja-build",
+            "arch": "x86_64",
+            "cross_scope": "host",
+            "check": "ninja --version"
+          },
+          {
+            "name": "bison",
+            "arch": "x86_64",
+            "cross_scope": "host",
+            "check": "bison --version"
+          }
+        ]
+      }
+    },
+    "application/native/omni_agent": {
+      "system_dependencies": {
+        "required": [
+          {
+            "name": "meson",
+            "cross_scope": "host",
+            "check": "meson --version"
+          },
+          {
+            "name": "ninja-build",
+            "cross_scope": "host",
+            "check": "ninja --version"
+          }
+        ]
+      }
+    },
+    "application/native/reachy_mini": {
+      "system_dependencies": {
+        "required": [
+          {
+            "name": "protobuf-compiler",
+            "cross_scope": "host",
+            "check": "which protoc"
+          },
+          {
+            "name": "protobuf-compiler-grpc",
+            "cross_scope": "host",
+            "check": "which grpc_cpp_plugin"
+          }
+        ]
+      }
+    },
+    "components/control/grasp/third_party/motor": {
+      "system_dependencies": {
+        "required": [
+          {
+            "name": "rustc",
+            "cross_scope": "host",
+            "check": "rustc --version"
+          },
+          {
+            "name": "cargo",
+            "cross_scope": "host",
+            "check": "cargo --version"
+          },
+          {
+            "name": "libstd-rust-dev",
+            "arch": "cross",
+            "cross_scope": "sysroot",
+            "check": "find /usr/lib -path '*/rustlib/riscv64*-unknown-linux-gnu/lib/libcore-*.rlib' -print -quit | grep -q ."
+          }
+        ]
+      }
+    },
+    "components/peripherals/motor": {
+      "system_dependencies": {
+        "required": [
+          {
+            "name": "rustc",
+            "cross_scope": "host",
+            "check": "rustc --version"
+          },
+          {
+            "name": "cargo",
+            "cross_scope": "host",
+            "check": "cargo --version"
+          },
+          {
+            "name": "libstd-rust-dev",
+            "arch": "cross",
+            "cross_scope": "sysroot",
+            "check": "find /usr/lib -path '*/rustlib/riscv64*-unknown-linux-gnu/lib/libcore-*.rlib' -print -quit | grep -q ."
+          }
+        ]
+      }
+    }
+  }
+}
